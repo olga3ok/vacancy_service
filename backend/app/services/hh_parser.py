@@ -26,7 +26,8 @@ async def get_vacancy_from_hh(vacancy_id: str) -> VacancyCreate:
                         if data.get("employer", {}).get("logo_urls") else "",
                     description=data.get("description", ""),
                     status="active",
-                    hh_id=str(data.get("id", ""))
+                    hh_id=str(data.get("id", "")),
+                    published_at=data.get("published_at", "")
                 )
             else:
                 raise Exception(f"Failed to fetch vacancy from HH.ru. Status: {response.status}")

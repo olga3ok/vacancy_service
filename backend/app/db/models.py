@@ -25,3 +25,4 @@ class Vacancy(Base):
     company_logo = Column(String) # URL to logo
     description = Column(Text)
     hh_id = Column(String, unique=True, index=True, nullable=True) # ID вакансии на hh.ru
+    published_at = Column(DateTime(timezone=True), nullable=True) # Дата публикации с hh.ru

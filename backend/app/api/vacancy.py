@@ -58,7 +58,7 @@ async def create_vacancy(
 
 
 @router.put("/update/{vacancy_id}", response_model=VacancySchema)
-@router.patch("/update/{vacanct_id}", response_model=VacancySchema)
+@router.patch("/update/{vacancy_id}", response_model=VacancySchema)
 async def update_vacancy(
     vacancy_id: int,
     vacancy_data: VacancyUpdate,

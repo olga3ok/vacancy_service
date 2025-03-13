@@ -14,7 +14,7 @@ class Settings(BaseSettings):
     HH_API_URL: str = os.getenv("HH_API_URL", "https://api.hh.ru/vacancies/")
 
     # Предустановленный пользователь
-    DEFAULT_USERNAME: str = os.getenv("DEFAULT_USERNAME", "admin")
-    DEFAULT_PASSWORD: str = os.getenv("DEFAULT_PASSWORD", "password")
+    DEFAULT_USERNAME: str = os.getenv("DEFAULT_USERNAME", "")
+    DEFAULT_PASSWORD: str = os.getenv("DEFAULT_PASSWORD", "")
 
 settings = Settings()

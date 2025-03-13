@@ -55,6 +55,21 @@ const VacancyDetailPage = () => {
         }
     };
 
+    // Форматирование даты и времени
+    const formatDateTime = (dateString) => {
+        if (!dateString) return 'Не указано';
+        
+        const date = new Date(dateString);
+        return date.toLocaleString('ru-RU', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            //timeZone: Intl.DateTimeFormat().resolvedOptions().timezone
+        });
+    };
+
     if (isLoading) {
         return <div className="text-center my-5"><div className="spinner-border" role="status"></div></div>;
     }
@@ -115,6 +130,19 @@ const VacancyDetailPage = () => {
                         <h4>{vacancy.company_name}</h4>
                         <p className="text-muted">{vacancy.company_address}</p>
                         <div>{renderStatus(vacancy.status)}</div>
+                        
+                        {/* Информация о датах */}
+                        <div className="mt-2">
+                            <div className="text-muted">
+                                <strong>Добавлено в систему:</strong> {formatDateTime(vacancy.created_at)}
+                            </div>
+                            {vacancy.published_at && (
+                                <div className="text-muted">
+                                    <strong>Опубликовано на HH:</strong> {formatDateTime(vacancy.published_at)}
+                                </div>
+                            )}
+                        </div>
+                        
                         {vacancy.hh_id && (
                             <div className="mt-2">
                                 <a 

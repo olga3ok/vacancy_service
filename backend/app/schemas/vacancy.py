@@ -11,6 +11,7 @@ class VacancyBase(BaseModel):
     description: str
     status: str
     hh_id: Optional[str] = None
+    published_at: Optional[datetime] = None
 
 
 class VacancyCreate(VacancyBase):
@@ -25,6 +26,7 @@ class VacancyUpdate(BaseModel):
     description: Optional[str] = None
     status: Optional[str] = None
     hh_id: Optional[str] = None
+    published_at: Optional[datetime] = None
 
 
 class VacancyInDB(VacancyBase):
