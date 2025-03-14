@@ -139,6 +139,11 @@ export const vacancyService = {
         const response = await api.delete(`/api/v1/vacancy/delete/${id}`);
         return response.data;
     },
+
+    refreshFromHH: async (id) => {
+        const response = await api.post(`/api/v1/vacancy/refresh-from-hh/${id}`);
+        return response.data;
+    }
 };
 
 export default api;

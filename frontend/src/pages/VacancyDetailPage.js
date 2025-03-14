@@ -6,25 +6,27 @@ const VacancyDetailPage = () => {
     const [vacancy, setVacancy] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState('');
+    const [refreshLoading, setRefreshLoading] = useState(false);
+    const [refreshSuccess, setRefreshSuccess] = useState(false);
 
     const { id } = useParams();
     const navigate = useNavigate();
 
-    useEffect(() => {
-        const fetchVacancy = async () => {
-            setIsLoading(true);
-            try {
-                const data = await vacancyService.getById(id);
-                setVacancy(data);
-                setError('');
-            } catch (err) {
-                setError('Failed to load vacancy details. Please try again later.');
-                console.error('Error loading vacancy details:', err);
-            } finally {
-                setIsLoading(false);
-            }
-        };
+    const fetchVacancy = async () => {
+        setIsLoading(true);
+        try {
+            const data = await vacancyService.getById(id);
+            setVacancy(data);
+            setError('');
+        } catch (err) {
+            setError('Failed to load vacancy details. Please try again later.');
+            console.error('Error loading vacancy details:', err);
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
+    useEffect(() => {
         if (id) {
             fetchVacancy();
         }
@@ -39,6 +41,29 @@ const VacancyDetailPage = () => {
                 setError('Failed to delete vacancy.');
                 console.error('Error deleting vacancy:', err);
             }
+        }
+    };
+
+    const handleRefreshFromHH = async () => {
+        if (!vacancy.hh_id) {
+            setError('Для обновления данных необходим ID вакансии на HH.ru');
+            return;
+        }
+
+        setError('');
+        setRefreshSuccess(false);
+        setRefreshLoading(true);
+
+        try {
+            await vacancyService.refreshFromHH(id);
+            await fetchVacancy(); // Перезагрузка данных о вакансии
+            setRefreshSuccess(true);
+            setTimeout(() => setRefreshSuccess(false), 3000);
+        } catch (err) {
+            setError(err.response?.data?.detail || 'Не удалось обновить данные с HH.ru');
+            console.error('Ошибка при обновлении данных с HH.ru', err);
+        } finally {
+            setRefreshLoading(false);
         }
     };
 
@@ -88,6 +113,29 @@ const VacancyDetailPage = () => {
                 <div className="d-flex justify-content-between align-items-center w-100">
                     <h3 className="card-title">{vacancy.title}</h3>
                     <div className="btn-group">
+                    {vacancy.hh_id && (
+                            <button 
+                                className="btn btn-info" 
+                                onClick={handleRefreshFromHH}
+                                disabled={refreshLoading}
+                            >
+                                {refreshLoading ? (
+                                    <>
+                                        <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                        Обновление...
+                                    </>
+                                ) : (
+                                    <>
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="icon me-1" width="24" height="24" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" fill="none" strokeLinecap="round" strokeLinejoin="round">
+                                            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                            <path d="M20 11a8.1 8.1 0 0 0 -15.5 -2m-.5 -4v4h4" />
+                                            <path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4" />
+                                        </svg>
+                                        Обновить с HH.ru
+                                    </>
+                                )}
+                            </button>
+                        )}
                         <Link to={`/vacancies/${id}/edit`} className="btn btn-primary">
                             <svg xmlns="http://www.w3.org/2000/svg" className="icon" width="24" height="24" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" fill="none" strokeLinecap="round" strokeLinejoin="round">
                                 <path stroke="none" d="M0 0h24v24H0z" fill="none" />
