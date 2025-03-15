@@ -15,13 +15,13 @@ export const AuthProvider = ({ children }) => {
 
     // При первой загрузке проверяем. аутентифицирован ли пользователь
     useEffect(() => {
-        const checkAuth = () => {
+        const checkAuth = async () => {
             const isAuth = authService.isAuthenticated();
             setIsAuthenticated(isAuth);
             
             // Если аутентифицирован, получаем данные пользователя
             if (isAuth) {
-                const user = authService.getUserData();
+                const user = await authService.fetchUserData();
                 setUserData(user);
             }
             setIsLoading(false);
@@ -37,7 +37,7 @@ export const AuthProvider = ({ children }) => {
             setIsAuthenticated(true);
 
             // После успешного входа получаем данные пользователя
-            const user = authService.getUserData();
+            const user = await authService.fetchUserData();
             setUserData(user);
 
             return true;

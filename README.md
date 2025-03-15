@@ -10,6 +10,7 @@
 #### Backend: 
 - Python 3.10+
 - FastAPI
+- PostgreSQL
 - SQLAlchemy
 - Pydantic
 - aiohttp
@@ -27,6 +28,8 @@ POST /api/v1/vacancy/create - Создание вакансии
 PUT/PATCH /api/v1/vacancy/update - Обновление вакансии
 GET /api/v1/vacancy/get/<id> - Получение вакансии
 DELETE /api/v1/vacancy/delete/<id> - Удаление вакансии
+POST /api/v1/vacancy/refresh-from-hh/<id> - Обновление данных вакансии с hh.ru
+GET /api/v1/vacancy/list - Получение списка вакансий
 ```
 ##### Авторизация
 ```
@@ -41,10 +44,16 @@ cd vacancy-service
 2. Создайте файл backend/.env:
 ```
 SECRET_KEY=
-DATABASE_URL=sqlite:///./app.db
 HH_API_URL=https://api.hh.ru/vacancies/
 DEFAULT_USERNAME=
-DEFAULT_PASSWORD=
+DEFAULT_PASSWORD==
+
+POSTGRES_HOST=db
+POSTGRES_PORT=5432
+POSTGRES_USER==
+POSTGRES_PASSWORD=
+POSTGRES_NAME=
+DB_ECHO_LOG=False
 ```
 3. Запустите проект с помощью Docker Compose
 ```

@@ -10,24 +10,6 @@ const api = axios.create({
     },
 });
 
-// Декодирование JWT токена для получения информации о пользователе
-const decodeToken = (token) => {
-    try {
-        const base64Url = token.split('.')[1];
-        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-        const jsonPayLoad = decodeURIComponent(
-            atob(base64)
-                .split('')
-                .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
-                .join('')
-        );
-        return JSON.parse(jsonPayLoad);
-    } catch (e) {
-        console.error('Error decoding token:', e);
-        return null;
-    }
-};
-
 // Добавление интерцептора запросов для добавления JWT токена к запросам
 api.interceptors.request.use(
     (config) => {
@@ -82,22 +64,10 @@ export const authService = {
         return !!localStorage.getItem('token');
     },
 
-    getUserData: () => {
-        const token = localStorage.getItem('token');
-        if (!token) {
-            return null;
-        }
-
-        const decodedToken = decodeToken(token);
-        return decodedToken ? {
-            id: decodedToken.sub,
-            username: decodedToken.username || decodedToken.sub
-        } : null;
-    },
-
     fetchUserData: async () => {
         try {
-            const response = await api.get('/api/v1/users/me');
+            const response = await api.get('/me');
+            console.log(response.data);
             return response.data;
         } catch (error) {
             console.error('Failed to fetch user data:', error);
@@ -109,7 +79,7 @@ export const authService = {
 // Сервис для работы с вакансиями
 export const vacancyService = {
     getAll: async () => {
-        const response = await api.get('/api/v1/vacancy/list');
+        const response = await api.get('/api/v1/vacancies/list');
         return response.data;
     },
 
