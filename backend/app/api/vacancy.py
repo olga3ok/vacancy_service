@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.future import select
 from typing import List
 
 from app.db.base import get_db
@@ -16,7 +17,7 @@ router = APIRouter()
 async def create_vacancy(
     vacancy_data: VacancyCreate = None,
     hh_id: str = None,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_active_user)
 ):
     """
@@ -42,7 +43,10 @@ async def create_vacancy(
 
     # Проверка существования вакансии с таким hh_id
     if vacancy_data.hh_id:
-        existing_vacancy = db.query(Vacancy).filter(Vacancy.hh_id == vacancy_data.hh_id).first()
+        stmt = select(Vacancy).where(Vacancy.hh_id == vacancy_data.hh_id)
+        result = await db.execute(stmt)
+        existing_vacancy = result.scalars().first()
+
         if existing_vacancy:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -52,8 +56,8 @@ async def create_vacancy(
     # Создание новой вакансии
     db_vacancy = Vacancy(**vacancy_data.dict())
     db.add(db_vacancy)
-    db.commit()
-    db.refresh(db_vacancy)
+    await db.commit()
+    await db.refresh(db_vacancy)
     return db_vacancy
 
 
@@ -62,14 +66,17 @@ async def create_vacancy(
 async def update_vacancy(
     vacancy_id: int,
     vacancy_data: VacancyUpdate,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_active_user)
 ):
     """
     Обновление данных вакансии
     """
     # Поиск вакансии
-    db_vacancy = db.query(Vacancy).filter(Vacancy.id == vacancy_id).first()
+    stmt = select(Vacancy).where(Vacancy.id == vacancy_id)
+    result = await db.execute(stmt)
+    db_vacancy = result.scalars().first()
+
     if db_vacancy is None:
         raise HTTPException(status_code=404, detail=f"Vacancy with id {vacancy_id} not found")
 
@@ -97,21 +104,24 @@ async def update_vacancy(
             if hasattr(db_vacancy, key) and value is not None:
                 setattr(db_vacancy, key, value)
 
-    db.commit()
-    db.refresh(db_vacancy)
+    await db.commit()
+    await db.refresh(db_vacancy)
     return db_vacancy
 
 
 @router.get("/get/{vacancy_id}", response_model=VacancySchema)
 async def get_vacancy(
     vacancy_id: int,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_active_user)
 ):
     """
     Получение информации о вакнсии
     """
-    db_vacancy = db.query(Vacancy).filter(Vacancy.id == vacancy_id).first()
+    stmt = select(Vacancy).where(Vacancy.id == vacancy_id)
+    result = await db.execute(stmt)
+    db_vacancy = result.scalars().first()
+
     if db_vacancy is None:
         raise HTTPException(status_code=404, detail=f"Vacancy with id {vacancy_id} not found")
     return db_vacancy
@@ -120,18 +130,21 @@ async def get_vacancy(
 @router.delete("/delete/{vacancy_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_vacancy(
     vacancy_id: int,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_active_user)
 ):
     """
     Удаление вакансии
     """
-    db_vacancy = db.query(Vacancy).filter(Vacancy.id == vacancy_id).first()
+    stmt = select(Vacancy).where(Vacancy.id == vacancy_id)
+    result = await db.execute(stmt)
+    db_vacancy = result.scalars().first()
+
     if db_vacancy is None:
         raise HTTPException(status_code=404, detail=f"Vacancy with id {vacancy_id} not found")
 
-    db.delete(db_vacancy)
-    db.commit()
+    await db.delete(db_vacancy)
+    await db.commit()
     return {"detail": "Vacancy deleted successfully"}
 
 
@@ -139,27 +152,32 @@ async def delete_vacancy(
 async def list_vacancies(
     skip: int = 0,
     limit: int = 100,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_active_user)
 ):
     """
     Получение списка вакансий
     """
-    vacancies = db.query(Vacancy).offset(skip).limit(limit).all()
+    stmt = select(Vacancy).offset(skip).limit(limit)
+    result = await db.execute(stmt)
+    vacancies = result.scalars().all()
     return vacancies
 
 
 @router.post("/refresh-from-hh/{vacancy_id}", response_model=VacancySchema)
 async def refresh_vacancy_from_hh(
     vacancy_id: int,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_active_user)
 ):
     """
     Обновление данных вакансии из HH.ru по сохраненному hh_id
     """
     # Поиск вакансии во внутренней БД
-    db_vacancy = db.query(Vacancy).filter(Vacancy.id == vacancy_id).first()
+    stmt = select(Vacancy).where(Vacancy.id == vacancy_id)
+    result = await db.execute(stmt)
+    db_vacancy = result.scalars().first()
+
     if db_vacancy is None:
         raise HTTPException(statuc_code=404, detail=f"Vacancy with id {vacancy_id} not found")
     
@@ -178,8 +196,8 @@ async def refresh_vacancy_from_hh(
             if hasattr(db_vacancy, key):
                 setattr(db_vacancy, key, value)
 
-        db.commit()
-        db.refresh(db_vacancy)
+        await db.commit()
+        await db.refresh(db_vacancy)
         return db_vacancy
     
     except Exception as e:

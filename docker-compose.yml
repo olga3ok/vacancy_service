@@ -9,6 +9,8 @@ services:
     volumes:
       - ./backend:/app
     restart: unless-stopped
+    depends_on:
+      - db
     
   frontend:
     build: ./frontend
@@ -22,3 +24,14 @@ services:
     depends_on:
       - backend
     restart: unless-stopped
+
+  db:
+    image: postgres:13
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    env_file: ./backend/.env
+    ports:
+      - "5432:5432"
+  
+volumes:
+  postgres_data:
