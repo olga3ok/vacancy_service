@@ -1,13 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from typing import List
 
 from app.db.base import get_db
-from app.db.models import Vacancy, User
+from app.db.models import Vacancy
 from app.schemas.vacancy import VacancyCreate, Vacancy as VacancySchema, VacancyUpdate
 from app.services.hh_parser import get_vacancy_from_hh
-from app.api.auth import get_current_active_user
 
 
 router = APIRouter()
@@ -17,8 +15,7 @@ router = APIRouter()
 async def create_vacancy(
     vacancy_data: VacancyCreate = None,
     hh_id: str = None,
-    db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_active_user)
+    db: AsyncSession = Depends(get_db)
 ):
     """
     Создание вакансии:
@@ -66,8 +63,7 @@ async def create_vacancy(
 async def update_vacancy(
     vacancy_id: int,
     vacancy_data: VacancyUpdate,
-    db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_active_user)
+    db: AsyncSession = Depends(get_db)
 ):
     """
     Обновление данных вакансии
@@ -112,8 +108,7 @@ async def update_vacancy(
 @router.get("/get/{vacancy_id}", response_model=VacancySchema)
 async def get_vacancy(
     vacancy_id: int,
-    db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_active_user)
+    db: AsyncSession = Depends(get_db)
 ):
     """
     Получение информации о вакнсии
@@ -130,8 +125,7 @@ async def get_vacancy(
 @router.delete("/delete/{vacancy_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_vacancy(
     vacancy_id: int,
-    db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_active_user)
+    db: AsyncSession = Depends(get_db)
 ):
     """
     Удаление вакансии
@@ -148,27 +142,10 @@ async def delete_vacancy(
     return {"detail": "Vacancy deleted successfully"}
 
 
-@router.get("/list", response_model=List[VacancySchema])
-async def list_vacancies(
-    skip: int = 0,
-    limit: int = 100,
-    db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_active_user)
-):
-    """
-    Получение списка вакансий
-    """
-    stmt = select(Vacancy).offset(skip).limit(limit)
-    result = await db.execute(stmt)
-    vacancies = result.scalars().all()
-    return vacancies
-
-
 @router.post("/refresh-from-hh/{vacancy_id}", response_model=VacancySchema)
 async def refresh_vacancy_from_hh(
     vacancy_id: int,
-    db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_active_user)
+    db: AsyncSession = Depends(get_db)
 ):
     """
     Обновление данных вакансии из HH.ru по сохраненному hh_id
@@ -205,4 +182,3 @@ async def refresh_vacancy_from_hh(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Error fetching vanancy from HH.ru: {str(e)}"
         )
-

@@ -5,7 +5,7 @@ sys.path.append(os.getcwd())
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api import auth, vacancy
+from app.api import auth, vacancy, user, vacancy_list
 from app.db.base import async_engine, Base, get_db
 from app.db.models import User
 from app.core.config import settings
@@ -29,6 +29,8 @@ app.add_middleware(
 # Регистрация роутеров
 app.include_router(auth.router, tags=["authentification"])
 app.include_router(vacancy.router, prefix="/api/v1/vacancy", tags=["vacancies"])
+app.include_router(vacancy_list.router, prefix="/api/v1/vacancies", tags=["vacancies-list"])
+app.include_router(user.router, tags=["user"])
 
 
 @app.on_event("startup")
