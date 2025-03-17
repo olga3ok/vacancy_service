@@ -160,3 +160,7 @@ db.sqlite3
 
 node_modules
 tests
+.github
+inventory.ini
+deploy.yml
+templates

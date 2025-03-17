@@ -1,7 +1,7 @@
 from fastapi import Depends, APIRouter
 from sqlalchemy.ext.asyncio import AsyncSession
-from typing import List
 from sqlalchemy.future import select
+from typing import List
 
 from app.db.base import get_db
 from app.db.models import Vacancy

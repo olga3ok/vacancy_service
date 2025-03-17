@@ -29,7 +29,7 @@ PUT/PATCH /api/v1/vacancy/update - Обновление вакансии
 GET /api/v1/vacancy/get/<id> - Получение вакансии
 DELETE /api/v1/vacancy/delete/<id> - Удаление вакансии
 POST /api/v1/vacancy/refresh-from-hh/<id> - Обновление данных вакансии с hh.ru
-GET /api/v1/vacancy/list - Получение списка вакансий
+GET /api/v1/vacancies/list - Получение списка вакансий
 ```
 ##### Авторизация
 ```

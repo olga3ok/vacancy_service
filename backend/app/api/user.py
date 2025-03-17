@@ -1,7 +1,7 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 
-from app.db.models import User
 from app.api.auth import get_current_active_user
+from app.db.models import User
 from app.schemas.user import UserResponse
 
 

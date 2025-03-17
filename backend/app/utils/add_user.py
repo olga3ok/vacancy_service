@@ -1,10 +1,11 @@
+import asyncio
 import os
 import sys
-import asyncio
 sys.path.append(os.getcwd())
 
 from passlib.context import CryptContext
 from sqlalchemy import select
+
 from app.db.models import User
 from app.db.base import get_db
 

@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
@@ -100,6 +101,8 @@ async def update_vacancy(
             if hasattr(db_vacancy, key) and value is not None:
                 setattr(db_vacancy, key, value)
 
+    db_vacancy.updated_at = datetime.now(timezone.utc)
+
     await db.commit()
     await db.refresh(db_vacancy)
     return db_vacancy
@@ -157,14 +160,14 @@ async def refresh_vacancy_from_hh(
 
     if db_vacancy is None:
         raise HTTPException(statuc_code=404, detail=f"Vacancy with id {vacancy_id} not found")
-    
+
     # Проверка наличия hh_id
     if not db_vacancy.hh_id:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="This vacancy doesn't have an associated HH.ru ID"
         )
-    
+
     try:
         # Получение обновленных данных с hh.ry
         updated_data = await get_vacancy_from_hh(db_vacancy.hh_id)
@@ -173,10 +176,12 @@ async def refresh_vacancy_from_hh(
             if hasattr(db_vacancy, key):
                 setattr(db_vacancy, key, value)
 
+        db_vacancy.updated_at = datetime.now(timezone.utc)
+
         await db.commit()
         await db.refresh(db_vacancy)
         return db_vacancy
-    
+
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,

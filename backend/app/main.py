@@ -4,13 +4,14 @@ sys.path.append(os.getcwd())
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy.future import select
 
 from app.api import auth, vacancy, user, vacancy_list
-from app.db.base import async_engine, Base, get_db
-from app.db.models import User
 from app.core.config import settings
 from app.core.security import get_password_hash
-from sqlalchemy.future import select
+from app.db.base import async_engine, Base, get_db
+from app.db.models import User
+from celery_app import celery_tests
 
 
 app = FastAPI(title="Vacancy Service API")
@@ -31,6 +32,8 @@ app.include_router(auth.router, tags=["authentification"])
 app.include_router(vacancy.router, prefix="/api/v1/vacancy", tags=["vacancies"])
 app.include_router(vacancy_list.router, prefix="/api/v1/vacancies", tags=["vacancies-list"])
 app.include_router(user.router, tags=["user"])
+app.include_router(celery_tests.router, tags=["celery_tests"])
+
 
 
 @app.on_event("startup")

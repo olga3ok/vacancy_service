@@ -1,6 +1,7 @@
 import aiohttp
-import ssl
 import certifi
+import ssl
+
 from app.core.config import settings
 from app.schemas.vacancy import VacancyCreate
 

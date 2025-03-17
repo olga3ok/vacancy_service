@@ -7,7 +7,7 @@ import VacancyListPage from './pages/VacancyListPage';
 import VacancyDetailPage from './pages/VacancyDetailPage';
 import VacancyCreatePage from './pages/VacancyCreatePage';
 import VacancyEditPage from './pages/VacancyEditPage';
-import Layout from './components/Layout';
+import Layout from './components/Layout/Layout';
 
 // Компонент защищенного маршрута - проверяет аутентификацию пользователя
 const ProtectedRoute = ({ children }) => {

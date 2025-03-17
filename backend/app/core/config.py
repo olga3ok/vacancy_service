@@ -29,6 +29,9 @@ class Settings(BaseSettings):
         """Формирование строки подключения к БД из отдельных параметров"""
         return f"postgresql+asyncpg://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/{self.POSTGRES_NAME}"
 
+    CELERY_BROKER_URL: str = os.getenv("CELERY_BROKER_URL", "")
+    CELERY_RESULT_BACKEND: str = os.getenv("CELERY_RESULT_BACKEND", "")
+
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"
