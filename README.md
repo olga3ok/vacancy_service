@@ -15,6 +15,7 @@
 - Pydantic
 - aiohttp
 - JWT для авторизации
+- Celery, RabbitMQ
 
 #### Frontend:
 - React 19
@@ -54,6 +55,14 @@ POSTGRES_USER==
 POSTGRES_PASSWORD=
 POSTGRES_NAME=
 DB_ECHO_LOG=False
+
+CELERY_BROKER_URL=
+CELERY_RESULT_BACKEND=
+```
+и файл .env в корне проекта:
+```
+RABBITMQ_DEFAULT_USER=
+RABBITMQ_DEFAULT_PASS=
 ```
 3. Запустите проект с помощью Docker Compose
 ```
