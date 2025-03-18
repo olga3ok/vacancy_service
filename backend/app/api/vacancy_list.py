@@ -3,8 +3,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from typing import List
 
+from app.api.auth import get_current_active_user
 from app.db.base import get_db
-from app.db.models import Vacancy
+from app.db.models import Vacancy, User
 from app.schemas.vacancy import Vacancy as VacancySchema
 
 
@@ -15,7 +16,8 @@ router = APIRouter()
 async def list_vacancies(
     skip: int = 0,
     limit: int = 100,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_active_user)
 ):
     """
     Получение списка вакансий
