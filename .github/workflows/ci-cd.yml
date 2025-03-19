@@ -175,3 +175,4 @@ jobs:
   #     - name: Run Ansible playbook
   #       run: |
   #         ansible-playbook -i inventory.ini deploy.yml --extra-vars "@vars.yml"
+  #1
