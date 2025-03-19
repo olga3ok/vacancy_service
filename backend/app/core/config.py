@@ -15,7 +15,7 @@ class Settings(BaseSettings):
     POSTGRES_PORT: str = os.getenv("POSTGRES_PORT", "5432")
     POSTGRES_USER: str = os.getenv("POSTGRES_USER", "postgres")
     POSTGRES_PASSWORD: str = os.getenv("POSTGRES_PASSWORD", "postgres")
-    POSTGRES_NAME: str = os.getenv("POSTGRES_NAME", "vacancy_db")
+    POSTGRES_DB: str = os.getenv("POSTGRES_DB", "vacancy_db")
     DB_ECHO_LOG: bool = os.getenv("DB_ECHO_LOG", "False").lower() == "true"
 
     HH_API_URL: str = os.getenv("HH_API_URL", "https://api.hh.ru/vacancies/")
@@ -27,7 +27,7 @@ class Settings(BaseSettings):
     @property
     def DATABASE_URL(self) -> str:
         """Формирование строки подключения к БД из отдельных параметров"""
-        return f"postgresql+asyncpg://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/{self.POSTGRES_NAME}"
+        return f"postgresql+asyncpg://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
 
     CELERY_BROKER_URL: str = os.getenv("CELERY_BROKER_URL", "")
     CELERY_RESULT_BACKEND: str = os.getenv("CELERY_RESULT_BACKEND", "")
