@@ -159,7 +159,6 @@ cython_debug/
 db.sqlite3
 
 node_modules
-.github
 inventory.ini
 deploy.yml
 templates
