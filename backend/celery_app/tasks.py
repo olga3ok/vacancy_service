@@ -5,7 +5,7 @@ from datetime import datetime, timedelta, timezone
 from sqlalchemy.future import select
 
 from app.db.models import Vacancy
-from app.db.base import get_db
+from app.db.base import Database
 from app.services.hh_parser import get_vacancy_from_hh
 
 
@@ -16,7 +16,7 @@ async def update_all_vacancies_from_hh_async():
     """
     Обвноление информации обо всех вакансиях с HH.ru
     """
-    async for session in get_db():
+    async for session in Database.get_db():
         stmt = select(Vacancy).where(Vacancy.hh_id.is_not(None))
         result = await session.execute(stmt)
         vacancies = result.scalars().all()
@@ -47,7 +47,7 @@ async def mark_outdated_vacancies_async():
     """
     Назначение статуса 'outdated' для вакансий, опубликованных на hh.ru более 2 недель назад
     """
-    async for session in get_db():
+    async for session in Database.get_db():
         stmt = select(Vacancy).where(Vacancy.hh_id.is_not(None))
         result = await session.execute(stmt)
         vacancies = result.scalars().all()
