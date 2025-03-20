@@ -1,10 +1,10 @@
 from sqlalchemy import Column, Integer, String, Text, DateTime, Boolean
 from sqlalchemy.sql import func
 
-from app.db.base import Base
+from app.db.base import Database
 
 
-class User(Base):
+class User(Database._base):
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True, index=True)
@@ -13,7 +13,7 @@ class User(Base):
     is_active = Column(Boolean, default=True)
 
 
-class Vacancy(Base):
+class Vacancy(Database._base):
     __tablename__ = "vacancies"
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)

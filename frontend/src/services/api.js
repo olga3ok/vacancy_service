@@ -43,7 +43,7 @@ export const authService = {
         formData.append('username', username);
         formData.append('password', password);
 
-        const response = await axios.post(`${API_URL}/token`, formData, {
+        const response = await axios.post(`${API_URL}/auth/token`, formData, {
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
             },
@@ -66,7 +66,7 @@ export const authService = {
 
     fetchUserData: async () => {
         try {
-            const response = await api.get('/me');
+            const response = await api.get('auth/me');
             console.log(response.data);
             return response.data;
         } catch (error) {

@@ -1,15 +1,17 @@
 import os
 from dotenv import load_dotenv
-from pydantic_settings import BaseSettings
+from dataclasses import dataclass
 
 
 load_dotenv()
 
 
-class Settings(BaseSettings):
+@dataclass(frozen=True)
+class Settings:
     SECRET_KEY: str = os.getenv("SECRET_KEY", "")
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
+    REFRESH_TOKEN_EXPIRE_MINUTES: int = 300
 
     POSTGRES_HOST: str = os.getenv("POSTGRES_HOST", "localhost")
     POSTGRES_PORT: str = os.getenv("POSTGRES_PORT", "5432")
@@ -24,17 +26,14 @@ class Settings(BaseSettings):
     DEFAULT_USERNAME: str = os.getenv("DEFAULT_USERNAME", "")
     DEFAULT_PASSWORD: str = os.getenv("DEFAULT_PASSWORD", "")
 
-    @property
-    def DATABASE_URL(self) -> str:
-        """Формирование строки подключения к БД из отдельных параметров"""
-        return f"postgresql+asyncpg://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
 
     CELERY_BROKER_URL: str = os.getenv("CELERY_BROKER_URL", "")
     CELERY_RESULT_BACKEND: str = os.getenv("CELERY_RESULT_BACKEND", "")
 
-    class Config:
-        env_file = ".env"
-        env_file_encoding = "utf-8"
+    @property
+    def DATABASE_URL(self) -> str:
+        """Формирование строки подключения к БД из отдельных параметров"""
+        return f"postgresql+asyncpg://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
 
 
 settings = Settings()
