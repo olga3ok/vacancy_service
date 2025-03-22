@@ -58,6 +58,8 @@ DB_ECHO_LOG=False
 
 CELERY_BROKER_URL=
 CELERY_RESULT_BACKEND=
+
+REDIS_URL=
 ```
 и файл .env в корне проекта:
 ```

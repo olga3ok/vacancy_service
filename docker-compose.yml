@@ -10,6 +10,12 @@ services:
       - "5432:5432"
     restart: always
 
+  redis:
+    image: redis:7
+    restart: always
+    ports:
+      - "6379:6379"
+
   rabbitmq:
     image: rabbitmq:3-management
     ports:
@@ -32,6 +38,7 @@ services:
     restart: unless-stopped
     depends_on:
       - db
+      - redis
       - rabbitmq
     
   frontend:

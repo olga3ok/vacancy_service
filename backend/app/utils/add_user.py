@@ -3,37 +3,38 @@ import os
 import sys
 sys.path.append(os.getcwd())
 
-from passlib.context import CryptContext
-from sqlalchemy import select
+from app.db.base import Database
+from app.schemas.user import UserCreate
+from app.core.utils.auth_service import AuthService
+from app.repositories.user_repository import UserRepository
 
-from app.db.models import User
-from app.db.base import get_db
-
-
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
 async def add_user(username: str, password: str):
     """
     Асинхронное добавление нового пользователя в базу
     """
-    async for db in get_db():
-        hashed_password = pwd_context.hash(password)
+    async for db in Database.get_db():
+        user_repo = UserRepository(db)
+        auth_service = AuthService(session=db, user_repo=user_repo)
 
-        # Проверка существования пользователя
-        stmt = select(User).where(User.username == username)
-        result = await db.execute(stmt)
-        existing_user = result.scalars().first()
-
+        existing_user = await user_repo.get_by_username(username)
         if existing_user:
             print(f"Пользователь '{username}' уже существует")
             return
 
-        # Добавление нового пользователя
-        new_user = User(username=username, hashed_password=hashed_password)
-        db.add(new_user)
-        await db.commit()
-        print(f"Пользователь '{username}' успешно добавлен.")
+        try:
+            # Добавление нового пользователя
+            user_data = UserCreate(username=username, password=password)
+            user = await auth_service.register_user(user_data)
+
+            if not user.is_active:
+                await user_repo.update(user.id, {"is_active": True})
+                await db.commit()
+
+            print(f"Пользователь '{username}' успешно добавлен.")
+        except Exception as e:
+            print(f"Ошибка при создании пользователя: {str(e)}")
 
 
 async def main():

@@ -6,13 +6,13 @@ sys.path.append(os.getcwd())
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from sqlalchemy.future import select
 
 from app.api.endpoints import auth, vacancy, vacancy_list
 from app.core.config import settings
 from app.core.security import PasswordHelper
 from app.db.base import Database
 from app.db.models import User
+from app.repositories.user_repository import UserRepository
 from celery_app import celery_tests
 
 
@@ -27,11 +27,28 @@ async def lifespan(app: FastAPI):
     await create_default_user()
 
     # Подключение к БД
+    async with Database.get_engine().connect() as connection:
+        yield
+
+
+async def create_default_user():
     async for db in Database.get_db():
-        try:
-            yield
-        finally:
-            await db.close()
+        user_repo = UserRepository(db)
+        user = await user_repo.get_by_username(settings.DEFAULT_USERNAME)
+
+        if not user:
+            # Создание пользователя, если он не существует
+            pwd_helper = PasswordHelper()
+            user_data = User(
+                username=settings.DEFAULT_USERNAME,
+                hashed_password=pwd_helper.hash_password(settings.DEFAULT_PASSWORD),
+                is_active=True
+            )
+            await user_repo.create(user_data)
+
+        await db.commit()
+        break
+
 
 
 def create_app() -> FastAPI:
@@ -59,21 +76,4 @@ def create_app() -> FastAPI:
     return app
 
 
-async def create_default_user():
-    async for db in Database.get_db():
-        # Проверка существования пользователя с заданным именем
-        stmt = select(User).where(User.username == settings.DEFAULT_USERNAME)
-        result = await db.execute(stmt)
-        user = result.scalars().first()
-
-        if not user:
-            # Создание пользователя, если он не существует
-            pwd_helper = PasswordHelper()  # Создаем экземпляр класса
-            new_user = User(
-                username=settings.DEFAULT_USERNAME,
-                hashed_password=pwd_helper.hash_password(settings.DEFAULT_PASSWORD),
-                is_active=True
-            )
-            db.add(new_user)
-            await db.commit()
-            break
+app = create_app()

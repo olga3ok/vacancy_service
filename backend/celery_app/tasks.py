@@ -6,7 +6,7 @@ from sqlalchemy.future import select
 
 from app.db.models import Vacancy
 from app.db.base import Database
-from app.services.hh_parser import get_vacancy_from_hh
+from app.services.hh_parser import HHParser
 
 
 nest_asyncio.apply()
@@ -23,7 +23,7 @@ async def update_all_vacancies_from_hh_async():
 
         for vacancy in vacancies:
             try:
-                update_data = await get_vacancy_from_hh(vacancy.hh_id)
+                update_data = await HHParser.get_vacancy_from_hh(vacancy.hh_id)
 
                 for key, value in update_data.dict().items():
                     if hasattr(vacancy, key):

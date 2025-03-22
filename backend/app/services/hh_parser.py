@@ -6,15 +6,32 @@ from app.core.config import settings
 from app.schemas.vacancy import VacancyCreate
 
 
-ssl_context = ssl.create_default_context(cafile=certifi.where())
-
-
-async def get_vacancy_from_hh(vacancy_id: str) -> VacancyCreate:
+class HHParser:
     """
-    Получение данных о вакансии с hh.ru по ID
+    Класс для работы с API hh.ru
     """
-    async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(ssl=ssl_context)) as session:
-        async with session.get(f"{settings.HH_API_URL}{vacancy_id}") as response:
+    def __init__(self):
+        self.session = None
+        self.ssl_context = ssl.create_default_context(cafile=certifi.where())
+        self.connector = aiohttp.TCPConnector(ssl=self.ssl_context)
+
+    async def __aenter__(self):
+        self.session = aiohttp.ClientSession(connector=self.connector)
+        return self
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        if self.session:
+            await self.session.close()
+        self.session = None
+
+    async def get_vacancy(self, vacancy_id: str) -> VacancyCreate:
+        """
+        Получение данных о вакансии с hh.ru по ID
+        """
+        if not self.session:
+            raise RuntimeError("Session is not initialized.")
+
+        async with self.session.get(f"{settings.HH_API_URL}{vacancy_id}") as response:
             if response.status == 200:
                 data = await response.json()
 
@@ -32,3 +49,16 @@ async def get_vacancy_from_hh(vacancy_id: str) -> VacancyCreate:
                 )
             else:
                 raise Exception(f"Failed to fetch vacancy from HH.ru. Status: {response.status}")
+
+    @classmethod
+    async def get_vacancy_from_hh(cls, vacancy_id: str) -> VacancyCreate:
+        """
+        Статический метод для использования без контекстного менеджера
+        Временная сессия для одного запроса
+        """
+        parser = cls()
+        await parser.__aenter__()
+        try:
+            return await parser.get_vacancy(vacancy_id)
+        finally:
+            await parser.__aexit__(None, None, None)
