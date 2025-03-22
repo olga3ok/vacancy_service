@@ -30,6 +30,8 @@ class Settings:
     CELERY_BROKER_URL: str = os.getenv("CELERY_BROKER_URL", "")
     CELERY_RESULT_BACKEND: str = os.getenv("CELERY_RESULT_BACKEND", "")
 
+    REDIS_URL: str = os.getenv("REDIS_URL", "redis://localhost:6379/")
+
     @property
     def DATABASE_URL(self) -> str:
         """Формирование строки подключения к БД из отдельных параметров"""

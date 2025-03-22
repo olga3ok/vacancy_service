@@ -4,7 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.repositories.vacancy_repository import VacancyRepository
 from app.schemas.vacancy import VacancyCreate, VacancyUpdate
-from app.services.hh_parser import get_vacancy_from_hh
+from app.services.hh_parser import HHParser
 
 
 class VacancyService:
@@ -22,7 +22,7 @@ class VacancyService:
         # Получение данных с HH.ru по ID
         if hh_id:
             try:
-                vacancy_data = await get_vacancy_from_hh(hh_id)
+                vacancy_data = await HHParser.get_vacancy_from_hh(hh_id)
             except Exception as e:
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
@@ -64,7 +64,7 @@ class VacancyService:
         update_data = vacancy_data.dict(exclude_unset=True)
         if vacancy_data.hh_id and vacancy_data.hh_id != db_vacancy.hh_id:
             try:
-                hh_data = await get_vacancy_from_hh(vacancy_data.hh_id)
+                hh_data = await HHParser.get_vacancy_from_hh(vacancy_data.hh_id)
                 hh_data_dict = hh_data.dict()
 
                 # Обновляем только те поля, которые не были указаны в vacancy_data
@@ -120,7 +120,7 @@ class VacancyService:
 
         try:
             # Получение обновленных данных с HH.ru
-            updated_data = await get_vacancy_from_hh(vacancy.hh_id)
+            updated_data = await HHParser.get_vacancy_from_hh(vacancy.hh_id)
             updated_vacancy = await self._vacancy_repo.update(vacancy_id, updated_data.dict())
             await self._session.commit()
             return updated_vacancy
