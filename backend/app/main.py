@@ -11,9 +11,7 @@ from app.api.endpoints import auth, vacancy, vacancy_list
 from app.core.config import settings
 from app.core.security import PasswordHelper
 from app.db.base import Database
-from app.db.models import User
 from app.repositories.user_repository import UserRepository
-from celery_app import celery_tests
 
 
 @asynccontextmanager
@@ -39,11 +37,11 @@ async def create_default_user():
         if not user:
             # Создание пользователя, если он не существует
             pwd_helper = PasswordHelper()
-            user_data = User(
-                username=settings.DEFAULT_USERNAME,
-                hashed_password=pwd_helper.hash_password(settings.DEFAULT_PASSWORD),
-                is_active=True
-            )
+            user_data = {
+                "username": settings.DEFAULT_USERNAME,
+                "hashed_password": pwd_helper.hash_password(settings.DEFAULT_PASSWORD),
+                "is_active": True
+            }
             await user_repo.create(user_data)
 
         await db.commit()
@@ -67,7 +65,6 @@ def create_app() -> FastAPI:
     app.include_router(auth.router, prefix="/auth", tags=["authentication"])
     app.include_router(vacancy.router, prefix="/api/v1/vacancy", tags=["vacancies"])
     app.include_router(vacancy_list.router, prefix="/api/v1/vacancies", tags=["vacancies-list"])
-    app.include_router(celery_tests.router, tags=["celery_tests"])
 
     @app.get("/")
     async def root():

@@ -4,7 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.repositories.vacancy_repository import VacancyRepository
 from app.schemas.vacancy import VacancyCreate, VacancyUpdate
-from app.services.hh_parser import HHParser
+from app.utils.hh_parser import HHParser
 
 
 class VacancyService:

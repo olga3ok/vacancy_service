@@ -3,8 +3,8 @@ from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.base import Database
-from app.core.utils.auth_service import AuthService
-from app.core.utils.vacancy_service import VacancyService
+from app.services.auth_service import AuthService
+from app.services.vacancy_service import VacancyService
 from app.db.models import User
 from app.exceptions.auth_exceptions import InactiveUserException, TokenValidationException
 from app.core.security import TokenVerifier, JWTHelper

@@ -26,11 +26,18 @@ class Settings:
     DEFAULT_USERNAME: str = os.getenv("DEFAULT_USERNAME", "")
     DEFAULT_PASSWORD: str = os.getenv("DEFAULT_PASSWORD", "")
 
-
-    CELERY_BROKER_URL: str = os.getenv("CELERY_BROKER_URL", "")
-    CELERY_RESULT_BACKEND: str = os.getenv("CELERY_RESULT_BACKEND", "")
-
     REDIS_URL: str = os.getenv("REDIS_URL", "redis://localhost:6379/")
+
+    RABBITMQ_USER: str = os.getenv("RABBITMQ_USER", "guest")
+    RABBITMQ_PASSWORD: str = os.getenv("RABBITMQ_PASSWORD", "guest")
+    RABBITMQ_HOST: str = os.getenv("RABBITMQ_HOST", "localhost")
+    RABBITMQ_PORT: str = os.getenv("RABBITMQ_PORT", "5672")
+    RABBITMQ_VHOST: str = os.getenv("RABBITMQ_VHOST", "/")
+
+    @property
+    def RABBITMQ_URL(self) -> str:
+        """URL для подключения к RabbitMQ"""
+        return f"amqp://{self.RABBITMQ_USER}:{self.RABBITMQ_PASSWORD}@{self.RABBITMQ_HOST}:{self.RABBITMQ_PORT}/{self.RABBITMQ_VHOST}"
 
     @property
     def DATABASE_URL(self) -> str:
