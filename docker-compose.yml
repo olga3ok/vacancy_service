@@ -17,16 +17,14 @@ services:
       - "6379:6379"
 
   rabbitmq:
-    image: rabbitmq:3-management
+    image: rabbitmq:3
     ports:
       - "5672:5672"
-      - "15672:15672"
-    environment:
-      - RABBITMQ_DEFAULT_USER=${RABBITMQ_DEFAULT_USER}
-      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_DEFAULT_PASS}
+    env_file: ./backend/.env
     restart: always
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
+      - ./rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf
 
   backend:
     build: ./backend
@@ -54,16 +52,28 @@ services:
     depends_on:
       - backend
 
-  celery:
+  worker:
     build: ./backend
-    restart: always
-    command: celery -A celery_app.celery worker --loglevel=info -B
+    command: taskiq worker app.tasks.taskiq:broker
+    env_file: ./backend/.env
     volumes:
       - ./backend:/app
-    env_file: ./backend/.env
+    restart: always
     depends_on:
-      - backend
       - rabbitmq
+      - db
+      - redis
+
+  scheduler:
+    build: ./backend
+    command: taskiq scheduler app.tasks.taskiq:scheduler
+    env_file: ./backend/.env
+    volumes:
+      - ./backend:/app
+    restart: always
+    depends_on:
+      - rabbitmq
+      - db
   
 volumes:
   postgres_data:

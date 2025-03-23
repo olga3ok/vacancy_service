@@ -14,8 +14,10 @@
 - SQLAlchemy
 - Pydantic
 - aiohttp
+- Redis для кэширования
 - JWT для авторизации
-- Celery, RabbitMQ
+- pytest для тестирования
+- taskiq, RabbitMQ для фоновых задач
 
 #### Frontend:
 - React 19
@@ -51,20 +53,18 @@ DEFAULT_PASSWORD==
 
 POSTGRES_HOST=db
 POSTGRES_PORT=5432
-POSTGRES_USER==
+POSTGRES_USER=
 POSTGRES_PASSWORD=
 POSTGRES_DB=
 DB_ECHO_LOG=False
 
-CELERY_BROKER_URL=
-CELERY_RESULT_BACKEND=
+REDIS_URL=redis://redis:6379/
 
-REDIS_URL=
-```
-и файл .env в корне проекта:
-```
-RABBITMQ_DEFAULT_USER=
-RABBITMQ_DEFAULT_PASS=
+RABBITMQ_USER=guest
+RABBITMQ_PASSWORD=guest
+RABBITMQ_HOST=rabbitmq
+RABBITMQ_PORT=5672
+RABBITMQ_VHOST=/
 ```
 3. Запустите проект с помощью Docker Compose
 ```

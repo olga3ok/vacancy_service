@@ -35,6 +35,10 @@ class HHParser:
             if response.status == 200:
                 data = await response.json()
 
+                published_at = data.get("published_at")
+                if published_at == "":
+                    published_at = None
+
                 # Извлечение данных из ответа API hh.ru
                 return VacancyCreate(
                     title=data.get("name", ""),
@@ -45,7 +49,7 @@ class HHParser:
                     description=data.get("description", ""),
                     status="active",
                     hh_id=str(data.get("id", "")),
-                    published_at=data.get("published_at", "")
+                    published_at=published_at
                 )
             else:
                 raise Exception(f"Failed to fetch vacancy from HH.ru. Status: {response.status}")

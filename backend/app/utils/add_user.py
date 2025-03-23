@@ -5,7 +5,7 @@ sys.path.append(os.getcwd())
 
 from app.db.base import Database
 from app.schemas.user import UserCreate
-from app.core.utils.auth_service import AuthService
+from app.services.auth_service import AuthService
 from app.repositories.user_repository import UserRepository
 
 

@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, status
 
-from app.core.utils.vacancy_service import VacancyService
+from app.services.vacancy_service import VacancyService
 from app.api.deps import get_current_active_user, get_vacancy_service
 from app.db.models import User
 from app.schemas.vacancy import VacancyCreate, Vacancy as VacancySchema, VacancyUpdate

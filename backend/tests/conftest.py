@@ -9,9 +9,9 @@ from unittest.mock import MagicMock, AsyncMock
 from app.schemas.vacancy import Vacancy
 from app.schemas.user import UserResponse
 from app.schemas.token import Token
-from app.core.utils.vacancy_service import VacancyService
-from app.core.utils.auth_service import AuthService
-from app.services.hh_parser import HHParser
+from app.services.vacancy_service import VacancyService
+from app.services.auth_service import AuthService
+from app.utils.hh_parser import HHParser
 from app.main import app
 
 
