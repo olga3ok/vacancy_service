@@ -1,10 +1,12 @@
-from typing import Optional, Dict, Any
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
+from typing import Optional, Dict, Any
+
 from app.db.models import User
+from app.repositories.base_repository import BaseRepository
 
 
-class UserRepository:
+class UserRepository(BaseRepository):
     """
     Репозиторий для работы с пользователями.
     Все операции с базой данных, связанные с моделью User
@@ -37,5 +39,13 @@ class UserRepository:
         if user:
             for key, value in update_data.items():
                 setattr(user, key, value)
+            await self._session.flush()
+        return user
+
+    async def delete(self, user_id: int) -> Optional[User]:
+        """ Удаление пользователя """
+        user = await self.get_by_id(user_id)
+        if user:
+            await self._session.delete(user)
             await self._session.flush()
         return user

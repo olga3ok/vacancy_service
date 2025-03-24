@@ -1,18 +1,19 @@
-from typing import Optional, List, Dict, Any
+from datetime import datetime, timezone
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from datetime import datetime, timezone
+from typing import Optional, List, Dict, Any
 
 from app.db.models import Vacancy
+from app.repositories.base_repository import BaseRepository
 
 
-class VacancyRepository:
+class VacancyRepository(BaseRepository):
     """
     Репозиторий для работы с вакансиями.
     Инкапсулирует все операции с базой данных, связанные с моделью Vacancy
     """
     def __init__(self, session: AsyncSession):
-        self._session = session
+        super().__init__(session)
 
 
     async def create(self, vacancy_data: Dict[str, Any]) -> Vacancy:

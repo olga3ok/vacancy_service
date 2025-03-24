@@ -1,23 +1,39 @@
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
-from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.security import TokenVerifier, JWTHelper, PasswordHelper
 from app.db.base import Database
-from app.services.auth_service import AuthService
-from app.services.vacancy_service import VacancyService
 from app.db.models import User
+from app.db.unit_of_work import UnitOfWork, UnitOfWorkFactory
 from app.exceptions.auth_exceptions import InactiveUserException, TokenValidationException
-from app.core.security import TokenVerifier, JWTHelper
-from app.repositories.user_repository import UserRepository
+from app.services.auth_service import AuthService
 from app.repositories.redis_repository import RedisRepository
+from app.services.vacancy_service import VacancyService
 
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/token")
 
 
+def get_unit_of_work_factory() -> UnitOfWorkFactory:
+    """ Функция-зависимость для получения фабрики Unit of Work """
+    return Database.get_unit_of_work_factory()
+
+
+def get_unit_of_work(
+        uow_factory: UnitOfWorkFactory = Depends(get_unit_of_work_factory)
+) -> UnitOfWork:
+    """ Функция-зависимость для получения Unit of Work """
+    return uow_factory.create()
+
+
 def get_jwt_helper() -> JWTHelper:
     """Функция-зависимость для получения JWTHelper"""
     return JWTHelper()
+
+
+def get_password_helper() -> PasswordHelper:
+    """ Функция-зависимость для получения PasswordHelper """
+    return PasswordHelper()
 
 
 def get_redis_repo() -> RedisRepository:
@@ -32,20 +48,18 @@ def get_token_verifier() -> TokenVerifier:
     return TokenVerifier(jwt_helper, redis_repo)
 
 
-async def get_user_repository(db: AsyncSession = Depends(Database.get_db)) -> UserRepository:
-    """Функция-зависимость для получения репозитория пользователей"""
-    return UserRepository(db)
-
-
 async def get_auth_service(
-    db: AsyncSession = Depends(Database.get_db),
-    user_repo: UserRepository = Depends(get_user_repository),
+    uow: UnitOfWork = Depends(get_unit_of_work),
     jwt_helper: JWTHelper = Depends(get_jwt_helper),
     token_verifier: TokenVerifier = Depends(get_token_verifier),
     redis_repo: RedisRepository = Depends(get_redis_repo)
 ) -> AuthService:
     """ Функция-зависимость для получения экземпляра AuthService """
-    return AuthService(db, user_repo, None, jwt_helper, token_verifier, redis_repo)
+    return AuthService(
+        unit_of_work=uow,
+        jwt_helper=jwt_helper,
+        token_verifier=token_verifier,
+        redis_repo=redis_repo)
 
 
 async def get_token_data(
@@ -58,7 +72,7 @@ async def get_token_data(
         if not user:
             raise TokenValidationException()
 
-        return {"payload": {"user_id": user.id}}
+        return {"payload": {"user_id": user.id, "token": token}}
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -78,7 +92,7 @@ async def get_current_user(
             raise TokenValidationException()
 
         # Получаем пользователя из репозитория или кэша
-        user = await auth_service._user_repo.get_by_id(user_id)
+        user = await auth_service.get_current_user_with_token(token_data.get("payload", {}).get("token", ""))
         if not user:
             raise TokenValidationException()
 
@@ -98,6 +112,6 @@ async def get_current_active_user(current_user: User = Depends(get_current_user)
     return current_user
 
 
-async def get_vacancy_service(db: AsyncSession = Depends(Database.get_db)) -> VacancyService:
+async def get_vacancy_service(uow: UnitOfWork = Depends(get_unit_of_work)) -> VacancyService:
     """ Функция-зависимость для получения экземпляра VacancyService """
-    return VacancyService(db)
+    return VacancyService(uow)
